@@ -1,0 +1,193 @@
+{
+  "name": "Lead Workflow Demo - After Review",
+  "description": "Improved fictional n8n-style workflow structure for lead capture QA demonstration.",
+  "demoOnly": true,
+  "containsRealData": false,
+  "nodes": [
+    {
+      "id": "manual_trigger_demo_lead_intake",
+      "name": "Manual Trigger - Demo Lead Intake",
+      "type": "manualTrigger",
+      "notes": "Starts the demo workflow with fictional lead data only.",
+      "parameters": {
+        "sampleInput": {
+          "leadId": "DEMO-001",
+          "leadName": "Sample Person",
+          "email": "sample@example.com",
+          "company": "Example Co",
+          "source": "demo_form",
+          "message": "Need help with workflow automation soon."
+        }
+      }
+    },
+    {
+      "id": "validate_required_lead_fields",
+      "name": "Validate Required Lead Fields",
+      "type": "code",
+      "notes": "Checks required fields before scoring or routing.",
+      "parameters": {
+        "requiredFields": [
+          "leadId",
+          "leadName",
+          "email",
+          "company",
+          "source",
+          "message"
+        ],
+        "invalidRoute": "manual_review_invalid_lead",
+        "validationRules": [
+          "leadName must not be blank",
+          "email must include @",
+          "message must not be blank"
+        ]
+      }
+    },
+    {
+      "id": "score_lead_priority",
+      "name": "Score Lead Priority",
+      "type": "code",
+      "notes": "Applies simple documented scoring rules to fictional lead data.",
+      "parameters": {
+        "scoringRules": [
+          {
+            "condition": "business email or company present",
+            "points": 20
+          },
+          {
+            "condition": "message includes urgent or soon",
+            "points": 30
+          },
+          {
+            "condition": "message mentions automation, workflow, or integration",
+            "points": 30
+          },
+          {
+            "condition": "source is trusted demo form",
+            "points": 10
+          }
+        ],
+        "categoryThresholds": {
+          "Hot": "70-100",
+          "Warm": "40-69",
+          "Cold": "0-39"
+        }
+      }
+    },
+    {
+      "id": "route_hot_warm_cold",
+      "name": "Route Lead Category",
+      "type": "if",
+      "notes": "Routes leads into Hot, Warm, Cold, or Manual Review categories.",
+      "parameters": {
+        "routes": [
+          "Hot",
+          "Warm",
+          "Cold",
+          "Manual Review"
+        ],
+        "fallbackRoute": "Manual Review"
+      }
+    },
+    {
+      "id": "prepare_follow_up_draft",
+      "name": "Prepare Follow-Up Draft Only",
+      "type": "set",
+      "notes": "Creates a draft only. This node must not send messages automatically.",
+      "parameters": {
+        "draftStatus": "Draft only - human approval required",
+        "followUpDraftTemplate": "Hi {{leadName}}, thanks for reaching out. I reviewed your request about {{topic}} and can share a short next-step suggestion after approval."
+      }
+    },
+    {
+      "id": "human_approval_required",
+      "name": "Human Approval Required",
+      "type": "manualReview",
+      "notes": "Stops before outreach. A human must review lead quality and approve any follow-up.",
+      "parameters": {
+        "approvalStatus": "pending",
+        "allowedActions": [
+          "approve draft",
+          "edit draft",
+          "reject lead",
+          "request more context"
+        ]
+      }
+    },
+    {
+      "id": "structured_reporting_output",
+      "name": "Structured Reporting Output",
+      "type": "set",
+      "notes": "Produces a reviewable summary for audit and handoff.",
+      "parameters": {
+        "outputFields": [
+          "leadId",
+          "validationStatus",
+          "score",
+          "category",
+          "draftStatus",
+          "approvalStatus",
+          "reviewNotes"
+        ],
+        "sampleOutput": {
+          "leadId": "DEMO-001",
+          "validationStatus": "valid",
+          "score": 90,
+          "category": "Hot",
+          "draftStatus": "draft_prepared",
+          "approvalStatus": "pending",
+          "reviewNotes": "No outreach sent. Human review required before action."
+        }
+      }
+    },
+    {
+      "id": "manual_review_invalid_lead",
+      "name": "Manual Review - Invalid or Unclear Lead",
+      "type": "set",
+      "notes": "Fallback path for missing fields, invalid email, unclear intent, or unknown category.",
+      "parameters": {
+        "status": "needs_manual_review",
+        "action": "Do not score or draft follow-up until required fields are checked."
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "manual_trigger_demo_lead_intake",
+      "to": "validate_required_lead_fields"
+    },
+    {
+      "from": "validate_required_lead_fields",
+      "to": "score_lead_priority",
+      "condition": "valid input"
+    },
+    {
+      "from": "validate_required_lead_fields",
+      "to": "manual_review_invalid_lead",
+      "condition": "invalid or missing input"
+    },
+    {
+      "from": "score_lead_priority",
+      "to": "route_hot_warm_cold"
+    },
+    {
+      "from": "route_hot_warm_cold",
+      "to": "prepare_follow_up_draft"
+    },
+    {
+      "from": "prepare_follow_up_draft",
+      "to": "human_approval_required"
+    },
+    {
+      "from": "human_approval_required",
+      "to": "structured_reporting_output"
+    }
+  ],
+  "reviewStatus": "Improved for demo review, not production-ready",
+  "safetyControls": [
+    "Fictional data only",
+    "No credentials",
+    "No external API calls",
+    "No automated outreach",
+    "Human approval required before action"
+  ]
+}
