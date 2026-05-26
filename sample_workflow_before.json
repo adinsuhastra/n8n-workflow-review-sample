@@ -1,0 +1,72 @@
+{
+  "name": "Lead Workflow Demo - Before Review",
+  "description": "Fictional n8n-style workflow with intentional QA issues for review practice.",
+  "demoOnly": true,
+  "containsRealData": false,
+  "nodes": [
+    {
+      "id": "node_1",
+      "name": "Step 1",
+      "type": "manualTrigger",
+      "notes": "Starts the demo workflow.",
+      "parameters": {
+        "sampleInput": {
+          "leadName": "Sample Person",
+          "email": "sample@example.com",
+          "company": "Example Co",
+          "source": "demo_form",
+          "message": "Need help with workflow automation soon."
+        }
+      }
+    },
+    {
+      "id": "node_2",
+      "name": "Check",
+      "type": "code",
+      "notes": "Scores the lead but does not validate required fields first.",
+      "parameters": {
+        "logic": "score = message includes 'soon' ? 80 : 40; category = score > 70 ? 'Hot' : 'Cold';"
+      }
+    },
+    {
+      "id": "node_3",
+      "name": "Do Thing",
+      "type": "set",
+      "notes": "Creates a follow-up draft, but does not label it as approval-required.",
+      "parameters": {
+        "followUpDraft": "Hi Sample Person, thanks for your interest. I can help with workflow automation."
+      }
+    },
+    {
+      "id": "node_4",
+      "name": "Output",
+      "type": "set",
+      "notes": "Outputs a loose summary without validation, approval, or error status.",
+      "parameters": {
+        "summary": "Lead scored and follow-up prepared."
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "node_1",
+      "to": "node_2"
+    },
+    {
+      "from": "node_2",
+      "to": "node_3"
+    },
+    {
+      "from": "node_3",
+      "to": "node_4"
+    }
+  ],
+  "knownReviewIssues": [
+    "Generic node names",
+    "No required-field validation",
+    "No invalid-lead route",
+    "No human approval checkpoint",
+    "Weak error handling",
+    "Loose output format"
+  ]
+}
